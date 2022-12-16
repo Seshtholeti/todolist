@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+
 }
 
 .App-logo {
@@ -35,4 +36,23 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.title{
+  font-size: 60px;
+  color: blue;
+}
+
+.input-box{
+  width: 20%;
+  font-size: 20px;
+  height: 30px;
+}
+
+.btn-inp{
+  background-color: greenyellow;
+  width: 100px;
+  height: 30px;
+   padding: 0 20px 0 20px;
+   border-radius:  8%;
 }
