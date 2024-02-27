@@ -1,70 +1,142 @@
-# Getting Started with Create React App
+import React, { useState } from "react";
+import axios from "axios";
+const MainComponent = () => {
+  const [searchQuery, setSearchQuery] = useState(
+    "bd16d991-11c8-4d1e-9900-edd5ed4a9b21"
+  );
+  const [components, setComponents] = useState([]);
+  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [responseData, setResponseData] = useState(null);
+  const [selectedName, setSelectedName] = useState(null);
+  const handleSearchInputChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+  const handleFetchClick = () => {
+    const api =
+      "https://guixfoyppb.execute-api.us-east-1.amazonaws.com/tagging/";
+    axios
+      .post(api, { intent: "agents" })
+      .then((response) => {
+        console.log(response.data);
+        setComponents(Object.keys(response.data)); // Assuming the API response is an object with keys as component names
+        setResponseData(response.data); // Store the response data
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  };
+  const handleComponentSelect = (component) => {
+    setSelectedComponent(component);
+    setSelectedName(null); // Reset selected name when a new component is selected
+  };
+  const handleNameSelect = (name) => {
+    console.log(name);
+    setSelectedName(name);
+  };
+  return (
+    <div>
+      <div style={{ marginBottom: "20px" }}>
+        <h2 style={{ marginBottom: "20px" }}>Search Component</h2>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <select
+            value={searchQuery}
+            onChange={handleSearchInputChange}
+            style={{
+              width: "400px",
+              marginRight: "10px",
+              marginLeft: "400px",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          >
+            <option value="bd16d991-11c8-4d1e-9900-edd5ed4a9b21">
+              bd16d991-11c8-4d1e-9900-edd5ed4a9b21
+            </option>
+          </select>
+          <button
+            onClick={handleFetchClick}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              fontSize: "16px",
+            }}
+          >
+            Fetch
+          </button>
+        </div>
+      </div>
+      <div style={{ display: "flex", padding: "20px" }}>
+        <div
+          style={{
+            flex: "1",
+            marginRight: "20px",
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+            backgroundColor: "#D3D3D3",
+            borderRadius: "10px",
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+            padding: "20px",
+          }}
+        >
+          <h2 style={{ marginBottom: "20px", fontSize: "20px" }}>Components</h2>
+          <select
+            value={selectedComponent}
+            onChange={(event) => handleComponentSelect(event.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          >
+            <option value="">Select a component</option>
+            {components.map((component, index) => (
+              <option key={index} value={component}>
+                {component}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div
+          style={{
+            flex: "1",
+            backgroundColor: "#D3D3D3",
+            borderRadius: "10px",
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+            padding: "20px",
+          }}
+        >
+          <h2 style={{ marginBottom: "20px", fontSize: "20px" }}>
+            Component Names
+          </h2>
+          <select
+            value={selectedName}
+            onChange={(event) => handleNameSelect(event.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          >
+            <option value="">Select a name</option>
+            {selectedComponent &&
+              responseData[selectedComponent].map((item, index) => (
+                <option key={index} value={item.Arn}>
+                  {item.Name}
+                </option>
+              ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default MainComponent;
