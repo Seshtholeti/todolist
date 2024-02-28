@@ -8,30 +8,53 @@ const MainComponent = () => {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [responseData, setResponseData] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
+  const [availableTags, setAvailableTags] = useState([]);
+  const [selectedTag, setSelectedTag] = useState(null);
   const handleSearchInputChange = (event) => {
     setSearchQuery(event.target.value);
   };
   const handleFetchClick = () => {
-    const api =
+    const apiComponents =
       "https://guixfoyppb.execute-api.us-east-1.amazonaws.com/tagging/";
     axios
-      .post(api, { intent: "agents" })
+      .post(apiComponents, { intent: "agents" })
       .then((response) => {
-        console.log(response.data);
-        setComponents(Object.keys(response.data)); // Assuming the API response is an object with keys as component names
-        setResponseData(response.data); // Store the response data
+        setComponents(Object.keys(response.data));
+        setResponseData(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching components:", error);
+      });
+  };
+  const fetchTagsForARN = (arn) => {
+    const api = "https://l78y00q47e.execute-api.us-east-1.amazonaws.com/test/";
+    axios
+      .post(api, { arn: arn })
+      .then((response) => {
+        // const apiTags =
+        //   "https://178y00q47e.execute-api.us-east-1.amazonaws.com/test/";
+        // // https://l78y00q47e.execute-api.us-east-1.amazonaws.com/test/
+        // axios
+        //   .post(apiTags, { arn: arn })
+        //   .then((response) => {
+        console.log(response);
+        setAvailableTags(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching tags:", error);
       });
   };
   const handleComponentSelect = (component) => {
     setSelectedComponent(component);
-    setSelectedName(null); // Reset selected name when a new component is selected
+    setSelectedName(null);
+    // const arn = responseData[component][0].Arn;
   };
   const handleNameSelect = (name) => {
-    console.log(name);
+    fetchTagsForARN(name);
     setSelectedName(name);
+  };
+  const handleTagSelect = (tag) => {
+    setSelectedTag(tag);
   };
   return (
     <div>
@@ -76,7 +99,6 @@ const MainComponent = () => {
           style={{
             flex: "1",
             marginRight: "20px",
-
             backgroundColor: "#D3D3D3",
             borderRadius: "10px",
             boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
@@ -135,6 +157,39 @@ const MainComponent = () => {
               ))}
           </select>
         </div>
+      </div>
+      <div
+        style={{
+          marginTop: "20px",
+          width: "610px",
+          backgroundColor: "#D3D3D3",
+          borderRadius: "10px",
+          boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+          padding: "20px",
+          marginLeft: "20px",
+        }}
+      >
+        <h2 style={{ marginBottom: "20px", fontSize: "20px" }}>
+          Available Tags
+        </h2>
+        <select
+          value={selectedTag}
+          onChange={(event) => handleTagSelect(event.target.value)}
+          style={{
+            width: "100%",
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "5px",
+            fontSize: "16px",
+          }}
+        >
+          <option value="">Select a tag</option>
+          {availableTags.map((tag, index) => (
+            <option key={index} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
