@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from "react";
+import Header from "./Header";
+const columnStyle = {
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  marginTop: "10px",
+  marginLeft: "10px",
+  gap: "12px",
+  justifyContent: "center",
+  alignItems: "center",
+};
 const containerStyle = {
   display: "flex",
   alignItems: "flex-start",
-  // backgroundColor: "blue",
   color: "#333",
   padding: "20px",
   height: "80.9vh",
@@ -16,6 +26,8 @@ const imageContainerStyle = {
   justifyContent: "center",
   alignItems: "center",
   borderRadius: "5px",
+  marginLeft: "10px",
+  marginTop: "25px",
 };
 const imageStyle = {
   width: "100%",
@@ -23,18 +35,16 @@ const imageStyle = {
   borderRadius: "5px",
 };
 const dataContainerStyle = {
-  flex: 1,
   display: "flex",
-  flexDirection: "column",
-  marginTop: "10px",
-  marginLeft: "110px",
-  gap: "12px",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
   height: "90%",
-  justifyContent: "center",
-  alignItems: "center",
+  marginLeft: "10px",
+  marginTop: "20px",
 };
 const cardStyle = {
-  backgroundColor: "#00008B",
+  backgroundColor: "#800080",
   padding: "8px",
   borderRadius: "5px",
   display: "flex",
@@ -42,204 +52,130 @@ const cardStyle = {
   alignItems: "center",
   height: "30px",
   color: "#fff",
-  fontSize: "14px",
-  width: "200px",
+  fontSize: "14px", // Adjusted font size
+  width: "220px", // Adjusted width
   transition: "background-color 0.3s ease",
 };
 const hoveredCardStyle = {
   backgroundColor: "red",
   color: "white",
-  pointer: "cursor",
+  cursor: "pointer",
 };
 const App = () => {
-  const [data, setData] = useState(null);
-  const [imageUrl, setImageUrl] = useState("");
-  const [hoveredCards, setHoveredCards] = useState([]); // Track hovered state for each card
+  const [data, setData] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [hoveredCardIndex, setHoveredCardIndex] = useState(null);
+  const images = [
+    "https://wb-quicksight-html.s3.eu-west-2.amazonaws.com/Whitbread-image.jpg",
+    "https://cdn.whitbread.co.uk/media/2022/10/Jill-Anderson-Property-Acquisition-Manager-Whitbread_October-2022.jpg-LANDSCAPE-CROPPED-scaled.jpg",
+    "https://e3.365dm.com/19/01/768x432/skynews-premier-inn-bradford_4556884.jpg?20190125140608",
+    "https://costar.brightspotcdn.com/dims4/default/39fe5b4/2147483647/strip/true/crop/1000x640+0+0/resize/1000x640!/quality/100/?url=http%3A%2F%2Fcostar-brightspot.s3.us-east-1.amazonaws.com%2F86%2F8b%2F3300a001482691cbc9fa712e7b01%2Fpremier-inn-wiesbaden-city-center.jpg",
+    "https://cdn.whitbread.co.uk/media/2024/02/Owen-Ellender-Senior-Development-Manager-Whitbread.jpg",
+  ];
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://0ns1q7m4zj.execute-api.eu-west-2.amazonaws.com/de"
+          "https://9lczoy9kqi.execute-api.eu-west-2.amazonaws.com/uk"
         );
-        const data = await response.json();
-        console.log(data);
-        console.log("seshu", data.body.Item);
-
-        setData(data.body.Item);
-        console.log("seshu", data.body.Item);
-        setImageUrl(
-          "https://wb-quicksight-html.s3.eu-west-2.amazonaws.com/Whitbread-image.jpg"
-        ); // Replace with the actual URL
+        const responseData = await response.json();
+        console.log(responseData);
+        setData(responseData.body.flat());
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-    // Fetch data initially
     fetchData();
-    // Fetch data every 10 seconds (adjust interval as needed)
     const interval = setInterval(fetchData, 10000);
-    // Cleanup interval on component unmount
     return () => clearInterval(interval);
+  }, []);
+  useEffect(() => {
+    const imageRotationInterval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(imageRotationInterval);
   }, []);
   const renderCard = (label, value, index) => (
     <div
       key={index}
       style={{
         ...cardStyle,
-        ...(hoveredCards[index] ? hoveredCardStyle : null),
+        ...(hoveredCardIndex === index ? hoveredCardStyle : null),
       }}
       onMouseEnter={() => handleMouseEnter(index)}
-      onMouseLeave={() => handleMouseLeave(index)}
+      onMouseLeave={() => handleMouseLeave()}
     >
       <span>{label}:</span>
       <span>{value}</span>
     </div>
   );
   const handleMouseEnter = (index) => {
-    setHoveredCards((prev) => {
-      const newHoveredCards = [...prev];
-      newHoveredCards[index] = true;
-      return newHoveredCards;
-    });
+    setHoveredCardIndex(index);
   };
-  const handleMouseLeave = (index) => {
-    setHoveredCards((prev) => {
-      const newHoveredCards = [...prev];
-      newHoveredCards[index] = false;
-      return newHoveredCards;
-    });
+  const handleMouseLeave = () => {
+    setHoveredCardIndex(null);
   };
+  const renderColumn = (items, department) => {
+    const orderedKeys = [
+      "DEPARTMENT",
+      "CIQ",
+      "LWT",
+      "OFFERED",
+      "ANS",
+      "ANS_RATE",
+      "RDY",
+      "TALK",
+      "NOT_RDY",
+      "ONLINE",
+    ];
+    return (
+      <div style={columnStyle}>
+        {items.map((item, index) => {
+          const orderedItems = orderedKeys.map((key) => ({
+            key,
+            value: item[key],
+          }));
+          return orderedItems.map((orderedItem, subIndex) =>
+            renderCard(
+              orderedItem.key,
+              orderedItem.value,
+              `${department}-${index}-${subIndex}`
+            )
+          );
+        })}
+      </div>
+    );
+  };
+  const reservationItems = data.filter(
+    (item) => item.DEPARTMENT === "Reservation center"
+  );
+  const guestRelationsItems = data.filter(
+    (item) => item.DEPARTMENT === "Guest Relations"
+  );
+  const restaurantItems = data.filter(
+    (item) => item.DEPARTMENT === "Restaurant"
+  );
   return (
     <div style={containerStyle}>
       <div style={imageContainerStyle}>
-        {imageUrl ? (
-          <img src={imageUrl} alt="Uploaded" style={imageStyle} />
+        {images.length > 0 ? (
+          <img
+            src={images[currentImageIndex]}
+            alt="Carousel"
+            style={imageStyle}
+          />
         ) : (
           <span>Upload Image</span>
         )}
       </div>
-      <div style={dataContainerStyle}>
-        {data &&
-          Object.keys(data).map((key, index) =>
-            renderCard(key, data[key], index)
-          )}
-      </div>
+      {data.length > 0 && (
+        <div style={dataContainerStyle}>
+          {renderColumn(reservationItems, "Reservation center")}
+          {renderColumn(guestRelationsItems, "Guest Relations")}
+          {renderColumn(restaurantItems, "Restaurant")}
+        </div>
+      )}
     </div>
   );
 };
 export default App;
-
-
-this is the api response
-
-
-
-
-body
-: 
-Array(3)
-0
-: 
-Item
-: 
-ANS
-: 
-0
-ANS_RATE
-: 
-"0"
-CIQ
-: 
-0
-DEPARTMENT
-: 
-"Query"
-LWT
-: 
-"0:0"
-NOT_RDY
-: 
-0
-OFF
-: 
-0
-RDY
-: 
-0
-TALK
-: 
-0
-[[Prototype]]
-: 
-Object
-[[Prototype]]
-: 
-Object
-1
-: 
-Item
-: 
-ANS
-: 
-0
-ANS_RATE
-: 
-"0"
-CIQ
-: 
-0
-DEPARTMENT
-: 
-"Reservation"
-LWT
-: 
-"0:0"
-NOT_RDY
-: 
-0
-OFF
-: 
-0
-RDY
-: 
-0
-TALK
-: 
-0
-[[Prototype]]
-: 
-Object
-[[Prototype]]
-: 
-Object
-2
-: 
-Item
-: 
-ANS
-: 
-0
-ANS_RATE
-: 
-"0"
-CIQ
-: 
-0
-DEPARTMENT
-: 
-"Group"
-LWT
-: 
-"0:0"
-NOT_RDY
-: 
-0
-OFF
-: 
-0
-RDY
-: 
-0
-TALK
-: 
-0
