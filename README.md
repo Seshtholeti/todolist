@@ -1,4 +1,19 @@
 ```yaml
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for Voice-To-Chat Solution
+
+Parameters:
+  ConnectInstanceArn:
+    Type: String
+  LambdaExecutionRole:
+    Type: String
+  EmailIdentityArn:
+    Type: String
+  ContactFlowModuleS3Bucket:
+    Type: String
+  ContactFlowModuleS3Key:
+    Type: String
+
 Resources:
   ConnectContactFlowModule1:
     Type: AWS::Connect::ContactFlowModule
