@@ -1,37 +1,106 @@
-Here's a clear prompt for your chit fund app development:
+import fetch from 'node-fetch';
+export const handler = async (event) => {
+ const VERIFY_TOKEN = "token_123";
+//  console.log('New Event:', event);
+console.log('New Event:', JSON.stringify(event, null, 2));
+ try {
+   // Handle GET request for webhook verification
+   if (event.httpMethod === "GET") {
+     const queryParams = event.queryStringParameters;
+     if (
+       queryParams &&
+       queryParams["hub.mode"] === "subscribe" &&
+       queryParams["hub.verify_token"] === VERIFY_TOKEN
+     ) {
+       console.log("Webhook verified successfully");
+       return {
+         statusCode: 200,
+         body: queryParams["hub.challenge"],  // Respond with the challenge
+       };
+     } else {
+       console.error("Verification failed");
+       return {
+         statusCode: 403,
+         body: "Forbidden",
+       };
+     }
+   }
+   // Handle POST request for receiving messages, comments, and reactions
+   if (event.httpMethod === "POST") {
+     const body = JSON.parse(event.body);
+     const entries = body.entry;
+     // Check if the entries are valid
+     if (!entries || entries.length === 0) {
+       return { statusCode: 400, body: 'No entry found' };
+     }
+     for (const entry of entries) {
+       // Handle messaging events
+       const messagingEvents = entry.messaging;
+       if (messagingEvents && messagingEvents.length > 0) {
+         for (const messageEvent of messagingEvents) {
+           const senderId = messageEvent.sender.id;
+           // If it's a message
+           if (messageEvent.messages && messageEvent.messages.text) {
+             const messageText = messageEvent.messages.text;
+             console.log(`Received message from ${senderId}: ${messageText}`);
+             await sendMessageToInstagram(senderId, `Thank you for your message: ${messageText}`);
+           }
+           // If it's a reaction
+           else if (messageEvent.reaction) {
+             const reaction = messageEvent.reaction.reaction;
+             console.log(`Received reaction from ${senderId}: ${reaction}`);
+           }
+         }
+       }
+       // Handle comment events
+       const changes = entry.changes;
+       if (changes && changes.length > 0) {
+         for (const change of changes) {
+           if (change.field === "comments") {
+             const commentMessage = change.value.message;
+             console.log(`Received comment: ${commentMessage}`);
+           }
+         }
+       }
+     }
+     // Return success response
+     return { statusCode: 200, body: 'EVENT_RECEIVED' };
+   }
+   // If the HTTP method is not GET or POST, return a 404 error
+   return { statusCode: 404, body: 'KMHVC' };
+ } catch (error) {
+   console.error("Error processing webhook:", error);
+   return { statusCode: 500, body: 'Internal Server Error' };
+ }
+};
+// Function to send a reply back to the Instagram user (via Facebook API)
+async function sendMessageToInstagram(senderId, messageText) {
+ const accessToken = "EAAX8zKLRFn8BO4NcgAnFzaHkFQq116F0JY1cMzJSMyeo8IRmglZBbP4TxwEmGqvprQmZCkg8JKSaylI2o066YYUaFxOntbeHChZCO4D3hAPBHQgMZA5YZCzzwUItHWCaG6u0sRF9HmKVsAC31gsFSHNIZB93ZAJBx4DhTjTNW3HygQwma0eeYEa914HLnRHCwEVKgZDZD";  // Replace with your access token
+ const url = `https://graph.facebook.com/v12.0/me/messages?access_token=${accessToken}`;
+ const requestBody = {
+   recipient: { id: senderId },
+   message: { text: messageText }
+ };
+ try {
+   const response = await fetch(url, {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify(requestBody)
+   });
+   const result = await response.json();
+   console.log('Message sent to Instagram:', result);
+ } catch (error) {
+   console.error('Error sending message to Instagram:', error);
+ }
+}
 
-"I need a simple, user-friendly chit fund management application designed for elderly users (around 55 years old) with the following requirements:
 
-Core Features:
-1. Member management with columns for:
-   - Serial Number (S.No)
-   - Member Name
-   - Dividend Payment tracking
-   - Monthly Payment Records (₹12,500 installments)
-   - Payment Dates
-   - Status tracking
+this is the lambda code.
 
-Key Requirements:
-1. Large, readable text and buttons
-2. Minimal steps for data entry
-3. Simple navigation with clear labels
-4. Automatic calculations for dividends
-5. Monthly payment status tracking
-6. Easy date entry system
-7. Ability to view payment history
-8. Simple search function to find members
-9. Basic reporting for monthly collections
-10. Data backup feature
+    "body": "{\"object\":\"instagram\",\"entry\":[{\"time\":1739960862383,\"id\":\"17841401165135019\",\"messaging\":[{\"sender\":{\"id\":\"1089888002823180\"},\"recipient\":{\"id\":\"17841401165135019\"},\"timestamp\":1739960861341,\"message\":{\"mid\":\"aWdfZAG1faXRlbToxOklHTWVzc2FnZAUlEOjE3ODQxNDAxMTY1MTM1MDE5OjM0MDI4MjM2Njg0MTcxMDMwMTI0NDI1OTY1MzU3NDEyMzk2ODEyNDozMjA5NjYxMjcwNzQzMzgwNTI2NDQzMDgyMzQ0MTk1Njg2NAZDZD\",\"text\":\"Hi what are you doing\"}}]}]}",
+    "isBase64Encoded": false
+}
 
-Design Priorities:
-- High contrast colors for better visibility
-- Clear, large input fields
-- Confirmation messages for all actions
-- Simple, step-by-step processes
-- Error prevention features
-- Ability to undo mistakes
-- Regular auto-save functionality
+this is the response from meta in cloud watch logs.
 
-The interface should be as simple as a paper ledger but with the advantages of digital organization and calculations."
-
-Would you like me to modify any part of this prompt to better match your specific needs?​​​​​​​​​​​​​​​​
+now I have to transfer this chat to amazon connect, where an agent receives this instagram message to the cpp and reply back to the user from ccp only.
